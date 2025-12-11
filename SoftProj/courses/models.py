@@ -14,6 +14,13 @@ class Course(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    prerequisties = models.ManyToManyField(
+        "self",
+        symmetrical=False,
+        blank=True,
+        related_name="required_for"
+    )
+
     def __str__(self):
         return f"{self.name} ({self.code})"
 
