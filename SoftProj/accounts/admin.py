@@ -7,11 +7,11 @@ from .models import User
 class CustomUserAdmin(UserAdmin):
     # بقیه کاربرا (مثل is_professor)
     fieldsets = UserAdmin.fieldsets + (
-        ('Extra Info', {'fields': ('is_professor',)}),
+        ('Extra Info', {'fields': ('is_professor','is_student')}),
     )
 
     add_fieldsets = UserAdmin.add_fieldsets + (
-        ('Extra Info', {'fields': ('is_professor',)}),
+        ('Extra Info', {'fields': ('is_professor','is_student')}),
     )
 
     list_display = ('username', 'email', 'is_staff', 'is_professor', 'is_active')
