@@ -7,17 +7,11 @@ class Student(models.Model):
     first_name = models.CharField(max_length=100, verbose_name="first name")
     last_name = models.CharField(max_length=100, verbose_name="last name")
     student_code = models.CharField(max_length=20, unique=True, verbose_name="professor code")
-    """
-    major = models.CharField(max_length=100) # رشته تحصیلی
-    entry_year = models.PositiveIntegerField() # سال ورود
 
+    major = models.CharField(max_length=100,blank=True, null=True)
+    entry_year = models.PositiveIntegerField(blank=True, null=True)
+    gender = models.CharField(max_length=10, choices=[('male','Male'),('female','Female')], blank=True, null=True)
     national_id = models.CharField(max_length=10, blank=True, null=True)
-    
-    gender = models.CharField(max_length=10, choices=[   # جنس
-        ('male', 'Male'),
-        ('female', 'Female'),
-    ], blank=True, null=True)
-    """
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

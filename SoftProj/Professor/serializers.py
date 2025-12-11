@@ -23,6 +23,12 @@ class ProfessorSerializer(serializers.ModelSerializer):
 
         user_data = validated_data.pop("user")
 
+        if User.objects.filter(username=user_data["username"]).exists():
+            raise serializers.ValidationError({"username": "This username is already taken."})
+
+        if  Professor.objects.filter(professor_code=validated_data.get("professor_code")).exists():
+            raise serializers.ValidationError({"professor_code": "This professor code is already taken."})
+
         user = User.objects.create_user(
             username=user_data["username"],
             email=user_data.get("email"),
@@ -35,7 +41,8 @@ class ProfessorSerializer(serializers.ModelSerializer):
         )
 
         return professor
-
+    
+    """
     def update(self, instance, validated_data):
         
         user_data = validated_data.pop("user", None)
@@ -51,20 +58,4 @@ class ProfessorSerializer(serializers.ModelSerializer):
             user.save()
 
         return super().update(instance, validated_data)
-
-"""
-class ProfessorRegisterSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only=True)
-    department = serializers.CharField()  
-
-    class Meta:
-        model = User
-        fields = ('username', 'email', 'password', 'department')
-
-    def create(self, validated_data):
-
-        dept = validated_data.pop('department')
-        user = User.objects.create_user(**validated_data, is_professor=True)
-        Professor.objects.create(user=user, department=dept)
-        return user
-"""
+    """

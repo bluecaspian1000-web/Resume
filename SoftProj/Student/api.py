@@ -28,19 +28,3 @@ def student_register(request):
             "access": str(refresh.access_token),
         }, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-"""
-@api_view(['PATCH'])
-#@permission_classes([IsAuthenticated])
-def student_update(request):
-    serializer = StudentSerializer(data=request.data)
-    if serializer.is_valid():
-        student = serializer.save()
-        refresh = RefreshToken.for_user(student)
-        return Response({
-            "prof": serializer.data,
-            "refresh": str(refresh),
-            "access": str(refresh.access_token),
-        }, status=status.HTTP_201_CREATED)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-"""

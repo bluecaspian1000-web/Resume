@@ -14,21 +14,7 @@ def professor_list(request):
     data = [{"id": p.id, "name": str(p)} for p in professors]
     return Response(data)
 
-"""
-@api_view(['POST'])
-#@permission_classes([IsAuthenticated])
-def professor_register(request):
-    serializer = ProfessorRegisterSerializer(data=request.data)
-    if serializer.is_valid():
-        user = serializer.save()
-        refresh = RefreshToken.for_user(user)
-        return Response({
-            "user": serializer.data,
-            "refresh": str(refresh),
-            "access": str(refresh.access_token),
-        }, status=status.HTTP_201_CREATED)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-"""
+
 
 @api_view(['POST'])
 #@permission_classes([IsAuthenticated])

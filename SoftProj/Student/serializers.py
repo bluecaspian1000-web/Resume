@@ -17,9 +17,9 @@ class StudentSerializer(serializers.ModelSerializer):
             'first_name',
             'last_name',
             'student_code',
-            #'major', 
-            #'entry_year', 
-            #'national_id',
+            'major', 
+            'entry_year', 
+            'national_id',
         ]
 
     def create(self, validated_data):
@@ -46,45 +46,4 @@ class StudentSerializer(serializers.ModelSerializer):
         return student
 
     
-    """
-    def update(self, instance, validated_data):
-        user_data = validated_data.pop("user", None)
-        user = instance.user
-
-        if user_data:
-            validated_data.pop("first_name", None)
-            validated_data.pop("last_name", None)
-
-            new_username = user_data.get("username", user.username)
-            #if new_username != user.username and User.objects.filter(username=new_username).exists():
-            #    raise serializers.ValidationError({"username": "This username is already taken."})
-
-            user.username = new_username
-            user.email = user_data.get("email", user.email)
-            user.first_name = user_data.get("first_name", user.first_name)
-            user.last_name = user_data.get("last_name", user.last_name)
-
-            if "password" in user_data:
-                user.set_password(user_data["password"])
-
-            user.save()
-
-        return super().update(instance, validated_data)
-
-    
-    def update(self, instance, validated_data):
-        
-        user_data = validated_data.pop("user", None)
-        user = instance.user
-
-        if user_data:
-            user.username = user_data.get("username", user.username)
-            user.email = user_data.get("email", user.email)
-
-            if "password" in user_data:
-                user.set_password(user_data["password"])
-
-            user.save()
-
-        return super().update(instance, validated_data)
-    """
+   
