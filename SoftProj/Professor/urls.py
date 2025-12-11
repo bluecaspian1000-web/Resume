@@ -1,5 +1,5 @@
 from django.urls import path
-from .api import professor_list, professor_register
+from .api import *
 
 urlpatterns = [
     path('api/professor/', professor_list,name='prof-list'),

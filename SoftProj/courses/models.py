@@ -9,12 +9,11 @@ class Course(models.Model):
     professor = models.ForeignKey('Professor.Professor', on_delete=models.CASCADE, related_name='courses',
                                   verbose_name="professor")
 
-    # prerequisites = models.ManyToManyField('self', symmetrical=False, blank=True, verbose_name="prerequisites")
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    prerequisties = models.ManyToManyField(
+    prerequisites = models.ManyToManyField(
         "self",
         symmetrical=False,
         blank=True,
@@ -60,6 +59,10 @@ class CourseSchedule(models.Model):
     )
 
     location = models.CharField(max_length=50, verbose_name="location")
+
+
+    semester = models.CharField(max_length=10, verbose_name="semester") 
+    
 
     def __str__(self):
         return f"{self.course.code} - {self.get_day_of_week_display()} {self.get_time_slot_display()}"
