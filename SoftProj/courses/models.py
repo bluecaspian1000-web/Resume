@@ -5,10 +5,7 @@ from Professor.models import Professor
 class Course(models.Model):
     name = models.CharField(max_length=100, verbose_name="course name")
     code = models.CharField(max_length=20, unique=True, verbose_name="course code")
-    capacity = models.PositiveIntegerField(verbose_name="capacity")
-    professor = models.ForeignKey('Professor.Professor', on_delete=models.CASCADE, related_name='courses',
-                                  verbose_name="professor")
-
+   
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -32,6 +29,10 @@ class Course(models.Model):
 
 class CourseSchedule(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='schedules', verbose_name="course")
+    capacity = models.PositiveIntegerField(verbose_name="capacity")
+    professor = models.ForeignKey('Professor.Professor', on_delete=models.CASCADE, related_name='courses',
+                                  verbose_name="professor")
+
 
     class DayOfWeek(models.TextChoices):
         SATURDAY = 'Saturday', 'Saturday'

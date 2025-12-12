@@ -81,7 +81,7 @@ def search_courses(request):
     serializer = CourseSerializer(queryset, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
-
+"""
 # Search course by name or prof (in a semester)
 @api_view(['GET'])
 def search_courses_by_semester(request):
@@ -108,7 +108,7 @@ def search_courses_by_semester(request):
 
     serializer = CourseScheduleSerializer(queryset, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
-
+"""
 
 # search courses by semester
 @api_view(['GET'])

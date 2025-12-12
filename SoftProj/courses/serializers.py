@@ -8,10 +8,18 @@ class CourseSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Course
-        fields = ['id', 'name', 'code', 'capacity', 'professor_name']
+        fields = ['name', 'code']
 
-    def get_professor_name(self, obj):
-        return str(obj.professor)
+    #def get_professor_name(self, obj):
+    #    return str(obj.professor)
+    
+    def validate_code(self, value):
+        # create
+        if self.instance is None:
+            if Course.objects.filter(code=value).exists():
+                raise serializers.ValidationError("Course code already exists.")
+        # update ?
+        return value
     
 
 
@@ -23,10 +31,10 @@ class CourseScheduleSerializer(serializers.ModelSerializer):
     class Meta:
         model = CourseSchedule
         fields = [
-            'id',
             'course',          
             'course_name',     
-            'course_code',     
+            'course_code',  
+            'capacity',   
             'professor_name',  
             'day_of_week',
             'time_slot',
@@ -47,3 +55,34 @@ class CourseScheduleSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Semester must be in format YYYY-N, e.g., 1403-1")
         return value
 
+
+from rest_framework import serializers
+from .models import Course
+
+
+class PrerequisiteSerializer(serializers.Serializer):
+    code = serializers.CharField(required=True)
+
+    def validate(self, data):
+        course = self.context.get("course")
+        mode = self.context.get("mode")  # add یا remove
+        code = data["code"]
+
+        try:
+            prereq = Course.objects.get(code=code)
+        except Course.DoesNotExist:
+            raise serializers.ValidationError({"code": "Course with this code not found."})
+
+        if mode == "add":
+            if course.id == prereq.id:
+                raise serializers.ValidationError({"code": "A course cannot be prerequisite of itself."})
+
+            if course.prerequisites.filter(id=prereq.id).exists():
+                raise serializers.ValidationError({"code": "This prerequisite already exists."})
+
+        elif mode == "remove":
+            if not course.prerequisites.filter(id=prereq.id).exists():
+                raise serializers.ValidationError({"code": "This prerequisite is not assigned to this course."})
+
+        data["prereq"] = prereq
+        return data
