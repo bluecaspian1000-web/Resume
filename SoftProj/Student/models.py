@@ -1,5 +1,7 @@
 from django.db import models
 from accounts.models import User
+from courses.models import CourseOffering
+from semester.models import StudentSemester
 
 class Student(models.Model):
     
@@ -23,3 +25,18 @@ class Student(models.Model):
     class Meta:
         verbose_name = "student"
         verbose_name_plural = "students"
+
+class StudentCourse(models.Model):
+    student_semester = models.ForeignKey(StudentSemester, on_delete=models.CASCADE)
+    course_offering = models.ForeignKey(CourseOffering, on_delete=models.CASCADE)
+
+    grade = models.FloatField(null=True, blank=True)
+    status = models.CharField(
+        choices=[
+            ('enrolled','Enrolled'),
+            ('passed','Passed'),
+            ('failed','Failed'),
+            ('dropped','Dropped')
+        ],
+        default='enrolled'
+    )
