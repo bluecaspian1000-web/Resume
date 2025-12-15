@@ -1,5 +1,10 @@
 
 from django.urls import path
-from .api import *
+
+from rest_framework.routers import DefaultRouter
+from . import views
+
+router = DefaultRouter
+router.register(r'semesters',views.SemesterViewSet)
 
 urlpatterns = [ ]

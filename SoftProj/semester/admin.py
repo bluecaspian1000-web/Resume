@@ -10,11 +10,3 @@ class SemesterAdmin(admin.ModelAdmin):
     ordering = ('-year', 'term')
     readonly_fields = ('code',)  
 
-"""
-@admin.register(StudentSemester)
-class StudentSemesterAdmin(admin.ModelAdmin):
-    list_display = ('student', 'semester', 'total_units', 'status', 'min_units', 'max_units')
-    list_filter = ('semester', 'status')
-    search_fields = ('student__user__username', 'semester__code')
-    ordering = ('semester', 'student')
-"""

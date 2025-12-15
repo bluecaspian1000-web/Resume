@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import *
 from accounts.models import User
+from semester.serializers import *
 
 
 class StudentSerializer(serializers.ModelSerializer):
@@ -66,9 +67,15 @@ class StudentSemesterUnitsSerializer(serializers.ModelSerializer):
     
 
 class StudentSemesterSerializer(serializers.ModelSerializer):
+    student = StudentSerializer(read_only=True)
+    semester = SemesterSerializer(read_only=True)
     def validate_term(self, value):
         if value not in (1, 2, 3):
             raise serializers.ValidationError("Invalid term")
         return value
 
 
+class StudentCourseSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = StudentCourse
+        fields = ['id', 'student_semester', 'course_offering', 'grade', 'status']

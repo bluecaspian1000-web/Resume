@@ -28,26 +28,3 @@ class Semester(models.Model):
     def __str__(self):
         return str(self.code)
 
-
-"""
-class StudentSemester(models.Model):
-    student = models.ForeignKey(Student, on_delete=models.CASCADE)
-    semester = models.ForeignKey(Semester, on_delete=models.CASCADE)
-
-    total_units = models.PositiveSmallIntegerField(default=0,blank=True,null=True)
-    status = models.CharField(
-        choices=[('normal','Normal'), ('probation','Probation')],
-        default='normal',
-        blank=True,
-        null=True,
-    )
-
-    min_units = models.PositiveSmallIntegerField(default=12,blank=True,null=True)
-    max_units = models.PositiveSmallIntegerField(default=24,blank=True,null=True)
-
-    class Meta:
-        unique_together = ('student', 'semester')
-
-    def __str__(self):
-        return f"{self.student} - {self.semester}"
-"""

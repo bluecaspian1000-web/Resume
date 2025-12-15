@@ -1,9 +1,13 @@
 from django.urls import path
-from .api import *
 
-urlpatterns = [
-    path('api/student/', student_list,name='student-list'),
-    path('api/student/register/', student_register,name='student-register'),
-    path('api/student-semesters/set-units/', student_semester_maxmin_units,name='student_semester_maxmin_units'),
+from rest_framework.routers import DefaultRouter
+from . import views
 
-]
+router = DefaultRouter
+router.register(r'students',views.StudentViewSet)
+router.register(r'student-course',views.StudentCourseViewSet)
+router.register(r'student-semester',views.StudentSemesterViewSet)
+
+
+
+urlpatterns = []

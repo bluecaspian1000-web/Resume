@@ -30,8 +30,7 @@ class CourseSerializer(serializers.ModelSerializer):
 class CourseOfferingSerializer(serializers.ModelSerializer):
     course_name = serializers.CharField(source='course.name', read_only=True)
     course_code = serializers.CharField(source='course.code', read_only=True)
-    #professor_name = serializers.SerializerMethodField()
-
+    course_unit = serializers.IntegerField(source='course.unit',read_only=True)
     class Meta:
         model = CourseOffering
         fields = [
@@ -79,7 +78,7 @@ class CreateCourseOfferingSerializer(serializers.ModelSerializer):
         ]
 
     def validate_semester(self, value):        
-        pattern = r'^\d{4}[1-3]$'  # YYYY-N : semester form
+        pattern = r'^\d{4}[1-3]$'  # YYYYN : semester form
         if not re.match(pattern, value):
             raise serializers.ValidationError("Semester must be in format YYYY-N, e.g., 1403-1")
         return value

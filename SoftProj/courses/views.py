@@ -1,16 +1,14 @@
 from rest_framework.viewsets import permissions , ModelViewSet
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
 
-from courses.models import *
-from courses.serializers import * 
+from .models import *
+from .serializers import * 
 
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import status
 from django_filters.rest_framework import DjangoFilterBackend
 from .filters import CourseOfferingFilter
-
-
 
 
 
