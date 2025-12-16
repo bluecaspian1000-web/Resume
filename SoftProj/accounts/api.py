@@ -1,4 +1,4 @@
-
+"""
 from django.contrib.auth import authenticate
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
@@ -39,3 +39,4 @@ def logout(request):
         return Response({"detail": "Logged out successfully"}, status=status.HTTP_200_OK)
     except Exception as e:
         return Response({"detail": "Invalid token"}, status=status.HTTP_400_BAD_REQUEST)
+"""

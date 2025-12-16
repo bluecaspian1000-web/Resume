@@ -11,6 +11,7 @@ class Semester(models.Model):
     )
 
     code = models.PositiveIntegerField(
+        #max_length=40,
         unique=True,
         editable=False,
         verbose_name="semester code"

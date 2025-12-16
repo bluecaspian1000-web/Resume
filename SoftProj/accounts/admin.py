@@ -1,3 +1,4 @@
+"""
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from .models import User
@@ -16,3 +17,4 @@ class CustomUserAdmin(UserAdmin):
 
     list_display = ('username', 'email', 'is_staff', 'is_professor', 'is_active','is_student','is_manager')
     list_filter = ('is_staff', 'is_superuser', 'is_professor', 'is_active','is_student','is_manager')
+"""

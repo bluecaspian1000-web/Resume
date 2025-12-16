@@ -1,4 +1,4 @@
-from rest_framework.viewsets import permissions , ModelViewSet
+from rest_framework.viewsets import  ModelViewSet
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
 
 from .models import *
@@ -13,6 +13,7 @@ from .filters import CourseOfferingFilter
 
 
 class CourseOfferingViewSet(ModelViewSet):
+
     queryset = CourseOffering.objects.all().distinct()
     serializer_class = CourseOfferingSerializer  
     filter_backends = [DjangoFilterBackend]
@@ -21,16 +22,18 @@ class CourseOfferingViewSet(ModelViewSet):
     def get_serializer_class(self):
         if self.action == 'create':
             return CreateCourseOfferingSerializer
-        return super().get_serializer_class()
+        return CourseOfferingSerializer
 
-
+    #lookup_field = 'code'          
+    #lookup_url_kwarg = 'code'
+    #permission_classes = [IsAdminUser]
 
 class SessionViewSet(ModelViewSet):
     queryset = Session.objects.all()
     serializer_class = SessionSerializer  
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['day_of_week', 'time_slot', 'location']
-    permission_classes = [IsAdminUser]
+    #permission_classes = [IsAdminUser]
 
 
 
@@ -39,8 +42,13 @@ class CourseViewSet(ModelViewSet):
     queryset = Course.objects.all()
     serializer_class = CourseSerializer
     filter_backends = [DjangoFilterBackend]
-    filterset_fields = ['code', 'name', 'unit']
 
+    #lookup_field = 'course_code'
+    #lookup_url_kwarg = 'course_code'
+
+    filterset_fields = ['code', 'name', 'unit']
+    #permission_classes = [IsAdminUser]
+    
     @action(detail=False, methods=["post"], url_path="add-prerequisite")
     def add_prerequisite(self, request):
 
@@ -79,4 +87,4 @@ class CourseViewSet(ModelViewSet):
             status=status.HTTP_200_OK
         )
     
-    permission_classes = [IsAdminUser]
+   

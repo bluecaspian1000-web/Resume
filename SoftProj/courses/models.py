@@ -1,11 +1,16 @@
 from django.db import models
+from django.core.validators import MinValueValidator, MaxValueValidator
 from Professor.models import Professor
 
 
 class Course(models.Model):
     name = models.CharField(max_length=100, verbose_name="course name")
     code = models.CharField(max_length=20, unique=True, verbose_name="course code")
-    unit = models.PositiveIntegerField(verbose_name="unit",blank=True,null=True)
+    unit = models.PositiveIntegerField(
+        default=3,
+        verbose_name="unit",
+        validators=[MinValueValidator(1),MaxValueValidator(3)]
+    )
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -59,19 +64,37 @@ class Session(models.Model):
 
     location = models.CharField(max_length=50, verbose_name="location")
 
+    def __str__(self):
+        return f"{self.day_of_week} ({self.time_slot}) - {self.location}" 
+    
+
 
 
 class CourseOffering(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='schedules', verbose_name="course")
     capacity = models.PositiveIntegerField(verbose_name="capacity")
-    offering_code = models.CharField(max_length=20, unique=True, verbose_name="offering code")
+    #offering_code = models.CharField(max_length=20, unique=True, verbose_name="offering code")
     professor = models.ForeignKey('Professor.Professor', on_delete=models.CASCADE, related_name='courses',
                                   verbose_name="professor")
 
     sessions = models.ManyToManyField(Session, related_name="course_schedules")
 
     semester = models.CharField(max_length=10, verbose_name="semester") 
+
+    group_code = models.CharField(
+        max_length=10,
+        verbose_name="group code"
+    )
     
+    code = models.CharField(    # offerin-course-code
+        max_length=50,
+        unique=True,
+        editable=False
+    ) 
+
+    def save(self, *args, **kwargs):
+        self.code = f"{self.course.code}{self.group_code}{self.semester}"
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.course.code}"

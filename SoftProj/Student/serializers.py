@@ -1,50 +1,42 @@
 from rest_framework import serializers
 from .models import *
-from accounts.models import User
+#from accounts.models import User
 from semester.serializers import *
+from rest_framework import serializers
+from .models import Student
 
+from rest_framework import serializers
+from django.contrib.auth.models import User
+from .models import Student
 
 class StudentSerializer(serializers.ModelSerializer):
-    username = serializers.CharField(source='user.username')
-    email = serializers.EmailField(source='user.email', required=False)
-    password = serializers.CharField(write_only=True, source='user.password')
+    username = serializers.CharField(write_only=True)
+    password = serializers.CharField(write_only=True, required=True)
 
     class Meta:
         model = Student
         fields = [
-            'username',
-            'email',
-            'password',
-            'first_name',
-            'last_name',
+            'username',      
+            'password',     
             'student_code',
-            'major', 
-            'entry_year', 
+            'major',
+            'entry_year',
+            'gender',
             'national_id',
+            'created_at',
+            'updated_at',
         ]
+        read_only_fields = ['created_at', 'updated_at']
 
     def create(self, validated_data):
-        user_data = validated_data.pop("user")
-     
-        if User.objects.filter(username=user_data["username"]).exists():
-            raise serializers.ValidationError({"username": "This username is already taken."})
-
-
-        if Student.objects.filter(student_code=validated_data.get("student_code")).exists():
-            raise serializers.ValidationError({"student_code": "This student code is already taken."})
-
-        user = User.objects.create_user(
-            username=user_data["username"],
-            email=user_data.get("email"),
-            password=user_data["password"],
-        )
-
-        student = Student.objects.create(
-            user=user,
-            **validated_data
-        )
-
+        username = validated_data.pop('username')
+        password = validated_data.pop('password')
+        user = User.objects.create(username=username)
+        user.set_password(password)
+        user.save()
+        student = Student.objects.create(user=user, **validated_data)
         return student
+
 
     
 class StudentSemesterUnitsSerializer(serializers.ModelSerializer):
@@ -69,6 +61,17 @@ class StudentSemesterUnitsSerializer(serializers.ModelSerializer):
 class StudentSemesterSerializer(serializers.ModelSerializer):
     student = StudentSerializer(read_only=True)
     semester = SemesterSerializer(read_only=True)
+    class Meta:
+        model = StudentSemester
+        fields = [
+            #'id',
+            'student',
+            'semester',
+            'total_units',
+            'status',
+            'min_units',
+            'max_units',
+        ]
     def validate_term(self, value):
         if value not in (1, 2, 3):
             raise serializers.ValidationError("Invalid term")

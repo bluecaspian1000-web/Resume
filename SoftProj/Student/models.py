@@ -1,11 +1,12 @@
 from django.db import models
-from accounts.models import User
 from courses.models import CourseOffering
 from semester.models import Semester
+from django.contrib.auth.models import User
 
 class Student(models.Model):
     
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="student_profile")
+    #user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="student_profile")
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
     first_name = models.CharField(max_length=100, verbose_name="first name")
     last_name = models.CharField(max_length=100, verbose_name="last name")
     student_code = models.CharField(max_length=20, unique=True, verbose_name="professor code")

@@ -1,4 +1,4 @@
-from rest_framework.viewsets import permissions , ModelViewSet
+from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
 
 from .models import *
@@ -18,7 +18,7 @@ class StudentViewSet(ModelViewSet):
     serializer_class = StudentSerializer  
     filter_backends = [DjangoFilterBackend]
     filterset_class = StudentFilter
-    permission_classes = [IsAdminUser]
+    #permission_classes = [IsAdminUser]
 
 
 class StudentSemesterViewSet(ModelViewSet):
@@ -62,7 +62,7 @@ class StudentSemesterViewSet(ModelViewSet):
         return Response(serializer.errors, status=400)
     
 
-    permission_classes = [IsAdminUser]
+    #permission_classes = [IsAdminUser]
 
 
 
@@ -71,4 +71,4 @@ class StudentCourseViewSet(ModelViewSet):
     serializer_class = StudentCourseSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_class = StudentCourseFilter
-    permission_classes = [IsAdminUser]
+    #permission_classes = [IsAdminUser]

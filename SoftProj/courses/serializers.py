@@ -4,11 +4,17 @@ import re
 
 
 class CourseSerializer(serializers.ModelSerializer):
-    professor_name = serializers.SerializerMethodField()
+    #professor_name = serializers.SerializerMethodField()
+
+    prerequisites = serializers.SlugRelatedField(
+        queryset=Course.objects.all(),  # لیست درس ها برای انتخاب
+        slug_field="code",              # از کد درس استفاده می‌کنیم
+        many=True
+    )
 
     class Meta:
         model = Course
-        fields = ['name', 'code']
+        fields = ['name', 'code', 'unit','prerequisites']
 
     
     def validate_code(self, value):
@@ -16,49 +22,74 @@ class CourseSerializer(serializers.ModelSerializer):
         if self.instance is None:
             if Course.objects.filter(code=value).exists():
                 raise serializers.ValidationError("Course code already exists.")
-        # update ?
         return value
     
-    def validate_unit(self,value):
-        allowed = [1, 2, 3]
-        if value not in allowed:
-            raise serializers.ValidationError("Units must be 1, 2, or 3.")
-        return value
-    
+   
+
+class SessionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Session
+        fields = ["day_of_week", "time_slot", "location"]
 
 
 class CourseOfferingSerializer(serializers.ModelSerializer):
+    sessions = SessionSerializer(many=True, read_only=True)
     course_name = serializers.CharField(source='course.name', read_only=True)
     course_code = serializers.CharField(source='course.code', read_only=True)
-    course_unit = serializers.IntegerField(source='course.unit',read_only=True)
+    course_unit = serializers.IntegerField(source='course.unit', read_only=True)
+    professor_name = serializers.SerializerMethodField()
+
     class Meta:
         model = CourseOffering
         fields = [
-            #'course',          
-            'course_name',     
-            'course_code', 
-            'offering-code',
-            'capacity',  
-            'unit' 
-            'professor_name',  
-            'sessions'
+            'code',
+            'course_name',
+            'course_code',
+            'course_unit',
+            'capacity',
+            'professor_name',
+            'sessions',
             'semester',
         ]
 
-
     def get_professor_name(self, obj):
-        return f"{obj.course.professor.user.first_name} {obj.course.professor.user.last_name}"
+        return f"{obj.professor.user.first_name} {obj.professor.user.last_name}"
     
+class CreateCourseOfferingSerializer(serializers.ModelSerializer):
+    sessions = SessionSerializer(many=True)
+
+    class Meta:
+        model = CourseOffering
+        fields = [
+            'course',
+            'professor',
+            'capacity',
+            'semester',
+            'group_code',
+            'sessions',
+        ]
 
     def validate_semester(self, value):
-        
-        pattern = r'^\d{4}[1-3]$'  # YYYY-N : semester form
-
-        if not re.match(pattern, value):
-            raise serializers.ValidationError("Semester must be in format YYYY-N, e.g., 1403-1")
+        if not re.match(r'^\d{4}-[1-3]$', value):
+            raise serializers.ValidationError(
+                "Semester must be in format YYYY-N, e.g., 1403-1"
+            )
         return value
-    
 
+
+    def create(self, validated_data):
+        sessions_data = validated_data.pop('sessions')
+
+        offering = CourseOffering.objects.create(**validated_data)
+
+        for session_data in sessions_data:
+            session, _ = Session.objects.get_or_create(**session_data)
+            offering.sessions.add(session)
+
+        return offering
+
+
+"""
 class CreateCourseOfferingSerializer(serializers.ModelSerializer):
     course_name = serializers.CharField(source='course.name', read_only=True)
     course_code = serializers.CharField(source='course.code', read_only=True)
@@ -110,7 +141,6 @@ class CreateCourseOfferingSerializer(serializers.ModelSerializer):
              raise serializers.ValidationError(
                 {"sessions": "A course must have either 1 session or 2 sessions."}
             )
-
         return attrs
     
     def create(self, validated_data):
@@ -143,14 +173,7 @@ class CreateCourseOfferingSerializer(serializers.ModelSerializer):
             seen.add(key)
 
         return value
-
-
-
-class SessionSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Session
-        fields = ["day_of_week", "time_slot", "location"]
-
+"""
 
 
 class PrerequisiteSerializer(serializers.Serializer):
