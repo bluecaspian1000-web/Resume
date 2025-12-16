@@ -72,7 +72,7 @@ class Session(models.Model):
 
 class CourseOffering(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='schedules', verbose_name="course")
-    capacity = models.PositiveIntegerField(verbose_name="capacity")
+    capacity = models.PositiveIntegerField(verbose_name="capacity",default=30)
     #offering_code = models.CharField(max_length=20, unique=True, verbose_name="offering code")
     professor = models.ForeignKey('Professor.Professor', on_delete=models.CASCADE, related_name='courses',
                                   verbose_name="professor")

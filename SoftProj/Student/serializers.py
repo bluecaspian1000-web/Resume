@@ -45,7 +45,7 @@ class StudentSemesterUnitsSerializer(serializers.ModelSerializer):
         fields = ['min_units', 'max_units']
 
     def validate(self, data):
-        # اگه فقط یکیش ارسال شد از قبلی استفاده میکنه
+        
         min_u = data.get('min_units', self.instance.min_units)
         max_u = data.get('max_units', self.instance.max_units)
 
