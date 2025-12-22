@@ -215,7 +215,6 @@ async function submitAddPrereq(){
 
     alert('پیشنیاز با موفقیت اضافه شد');
 
-    // می‌توانید ورودی‌ها را هم پاک کنید
     document.getElementById('mainCode').value = '';
     document.getElementById('preCode').value = '';
 
@@ -247,7 +246,7 @@ async function submitRemovePrereq(){
     });
 
     if (!res.ok) {
-      const err = await res.json();  // پیام خطا از سرور
+      const err = await res.json();  
       console.error(err);
       alert('خطا در حذف پیشنیاز: ' + (err.detail || 'مشکل نامشخص'));
       return;
@@ -255,7 +254,6 @@ async function submitRemovePrereq(){
 
     alert('پیشنیاز با موفقیت حذف شد');
 
-    // پاک کردن ورودی‌ها
     document.getElementById('mainCode').value = '';
     document.getElementById('preCode').value = '';
 

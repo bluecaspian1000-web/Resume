@@ -66,19 +66,18 @@ async function renderOferedCourseList() {
     }
   }
 
-  // رندر اولیه بدون فیلتر
   render();
 
   let typingTimer;
   searchInput.addEventListener('input', (e) => {
     clearTimeout(typingTimer);
     typingTimer = setTimeout(() => {
-      const query = e.target.value.trim(); // حذف فاصله‌های اضافی
+      const query = e.target.value.trim(); 
       if (query === '') {
-        container.innerHTML = ''; // پاک کردن نتایج
+        container.innerHTML = ''; 
         return;
       }
-      render(query); // ارسال query فقط اگر غیرخالی باشد
+      render(query); 
     }, 300);
   });
 }
@@ -364,7 +363,6 @@ backBtn.addEventListener('click', () => {
       if (!res.ok) throw new Error("خطا در دریافت اطلاعات درس ارائه شده");
       const data = await res.json();
 
-      // مقداردهی اولیه inputها
       document.getElementById('groupCode').value = data.group_code || '';
       document.getElementById('profName').value = data.prof_name || '';
       document.getElementById('capacity').value = data.capacity || '';
@@ -412,13 +410,10 @@ backBtn.addEventListener('click', () => {
     sessionsContainer.appendChild(row);
   }
 
-  // اضافه کردن جلسه جدید
   document.getElementById('addSessionBtn').addEventListener('click', () => createSessionRow());
 
-  // بارگذاری اطلاعات فعلی و سشن‌ها
   loadExistingSessions();
 
-  // ثبت تغییرات
   document.getElementById('submitUpdateOfferedBtn').addEventListener('click', async () => {
     try {
       const sessionRows = document.querySelectorAll('.session-row');
@@ -476,7 +471,6 @@ async function renderDeleteOferedCourse() {
     const data = await res.json();
 
     data.forEach(c => {
-      // ساخت یک div برای هر درس ارائه شده
       const card = document.createElement('div');
       card.className = 'delete-card'; // کلاس برای CSS
       card.innerHTML = `
