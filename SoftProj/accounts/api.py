@@ -17,13 +17,20 @@ def login_api(request):
 
     user = authenticate(username=username, password=password)
 
-    if user is None:
-        return Response(
-            {"detail": "Invalid username or password"},
-            status=status.HTTP_401_UNAUTHORIZED
-        )
+    if user:
+            # صادر کردن توکن JWT
+            refresh = RefreshToken.for_user(user)
+            access_token = str(refresh.access_token)
 
-    refresh = RefreshToken.for_user(user)
+            # تعیین نقش بر اساس گروه‌ها و is_staff
+            if user.groups.filter(name='admin').exists() :
+                role = 'admin'
+            elif user.groups.filter(name='prof').exists():
+                role = 'prof'
+            else:
+                role = 'student'
+
+      
 
     return Response({
         "user": {
@@ -33,7 +40,9 @@ def login_api(request):
         },
         "refresh": str(refresh),
         "access": str(refresh.access_token),
+        "role":role,
     }, status=status.HTTP_200_OK)
+
 
 
 @api_view(['POST'])

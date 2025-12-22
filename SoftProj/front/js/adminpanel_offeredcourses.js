@@ -73,29 +73,23 @@ async function renderOferedCourseList() {
     clearTimeout(typingTimer);
     typingTimer = setTimeout(() => {
       const query = e.target.value.trim(); 
-      if (query === '') {
-        container.innerHTML = ''; 
-        return;
-      }
       render(query); 
-    }, 300);
+    },300);
   });
 }
 
 async function fetchOfferedCourses(query='') {
   let url = `${API}/courseofferings/`;
-  if(query) {
-   const params = new URLSearchParams();
-   params.append('search', query);
-   url += `?${params.toString()}`;
-
+  if(query){ // فقط وقتی query غیرخالی است
+    const params = new URLSearchParams();
+    params.append('search', query);
+    url += `?${params.toString()}`;
   }
-  
-
   const res = await fetch(url);
-  if (!res.ok) throw new Error('خطا در دریافت داده‌ها');
+  if(!res.ok) throw new Error('خطا در دریافت داده‌ها');
   return await res.json();
 }
+
 
 
 
