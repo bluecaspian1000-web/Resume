@@ -1,5 +1,6 @@
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
+from rest_framework_simplejwt.authentication import JWTAuthentication
 from .models import *
 from .serializers import *
 from courses.serializers import CourseOfferingReadSerializer 
@@ -10,17 +11,14 @@ from django_filters.rest_framework import DjangoFilterBackend
 from .filters import *
 
 
-class SemesterViewSet(ModelViewSet):
-    queryset = Semester.objects.all().distinct()
-    serializer_class = SemesterSerializer
-    filter_backends = [DjangoFilterBackend]
-    filterset_fields = ['year','term','code']
+
 
 
 
 class StudentSemesterViewSet(ModelViewSet):
     queryset = StudentSemester.objects.all()
-    serializer_class = StudentSemesterSerializer  
+    serializer_class = StudentSemesterSerializer 
+    permission_classes = [IsAuthenticated] 
     #filter_backends = [DjangoFilterBackend]
     #filterset_class = StudentSemesterFilter
 
@@ -80,10 +78,23 @@ class StudentSemesterViewSet(ModelViewSet):
 
 
 
-"""
+
 class StudentCourseViewSet(ModelViewSet):
-    queryset = StudentCourse.objects.all()
+    queryset = StudentCourse.objects.all() #filter(student_semester__is_active=True)
     serializer_class = StudentCourseSerializer
-    filter_backends = [DjangoFilterBackend]
-    #filterset_class = StudentCourseFilter
-"""
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated] 
+
+    def get_queryset(self):
+        return StudentCourse.objects.filter(
+            student_semester__is_active=True,
+            student_semester__student=self.request.user
+        )
+
+    
+    @action(detail=False, methods=['post'], url_path='enroll')
+    def enroll(self, request):
+        serializer = EnrollCourseSerializer(data=request.data, context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        student_course = serializer.save()
+        return Response(StudentCourseSerializer(student_course).data, status=201)

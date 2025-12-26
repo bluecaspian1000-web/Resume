@@ -42,6 +42,6 @@ class CourseOfferingFilter(filters.FilterSet):
         return queryset.filter(
             Q(course__name__icontains=value) |
             Q(course__code__icontains=value) |
-            Q(prof_name__icontains=value)
+            Q(prof__name__icontains=value)
         )
     

@@ -2,23 +2,6 @@
 //const API = 'http://127.0.0.1:8000';
 //const content = document.getElementById('content');
 
-/*
-document.querySelectorAll('.menu-item').forEach(item => {
-  const targetId = item.getAttribute('data-target');
-  if (!targetId) return;
-
-  item.addEventListener('click', () => {
-    const menu = document.getElementById(targetId);
-    if (!menu) return;
-
-    document.querySelectorAll('.submenu').forEach(sm => {
-      if (sm !== menu) sm.style.display = 'none';
-    });
-
-    menu.style.display = (menu.style.display === 'block') ? 'none' : 'block';
-  });
-});
-*/
 // ---------------- coursesList ------------------
 async function renderOferedCourseList() {
   content.innerHTML = `
@@ -30,20 +13,27 @@ async function renderOferedCourseList() {
   const container = document.querySelector('.offered-container');
   const searchInput = document.getElementById('searchInput');
 
-  async function render(query='') {
+  async function render(query = '') {
     container.innerHTML = '';
     try {
       const data = await fetchOfferedCourses(query);
 
       data.forEach(c => {
+        const prof = typeof c.prof === 'string'
+          ? c.prof
+          : (c.prof?.first_name ? `${c.prof.first_name} ${c.prof.last_name}` : 'نامشخص');
+
+        const semester = typeof c.semester === 'string'
+          ? c.semester
+          : (c.semester?.code || '---');
+
         const courseName = c.course?.name || 'نامشخص';
         const courseCode = c.course?.code || '---';
         const group = c.group_code || '---';
-        const prof = c.prof_name || 'نامشخص';
         const capacity = c.capacity || '---';
-        const semester = c.semester || '---';
+
         const sessions = c.sessions?.length
-          ? c.sessions.map(s => `${s.day_of_week} (${s.time_slot})`).join(', ')
+          ? c.sessions.map(s => (s.day_of_week ? `${s.day_of_week} (${s.time_slot})` : s)).join(', ')
           : 'ندارد';
 
         const card = document.createElement('div');
@@ -72,15 +62,15 @@ async function renderOferedCourseList() {
   searchInput.addEventListener('input', (e) => {
     clearTimeout(typingTimer);
     typingTimer = setTimeout(() => {
-      const query = e.target.value.trim(); 
-      render(query); 
-    },300);
+      const query = e.target.value.trim();
+      render(query);
+    }, 300);
   });
 }
 
-async function fetchOfferedCourses(query='') {
+async function fetchOfferedCourses(query = '') {
   let url = `${API}/courseofferings/`;
-  if(query){ // فقط وقتی query غیرخالی است
+  if(query) {
     const params = new URLSearchParams();
     params.append('search', query);
     url += `?${params.toString()}`;
@@ -89,9 +79,6 @@ async function fetchOfferedCourses(query='') {
   if(!res.ok) throw new Error('خطا در دریافت داده‌ها');
   return await res.json();
 }
-
-
-
 
 // نمایش جزئیات کامل درس ارائه شده + پیشنیازها
 function showCourseOfferingDetails(offering) {
@@ -106,7 +93,7 @@ function showCourseOfferingDetails(offering) {
       <p><strong>واحد:</strong> ${course.unit}</p>
       <p><strong>گروه:</strong> ${offering.group_code}</p>
       <p><strong>ترم:</strong> ${offering.semester}</p>
-      <p><strong>استاد:</strong> ${offering.prof_name || 'نامشخص'}</p>
+      <p><strong>استاد:</strong> ${offering.prof ? `${offering.prof.first_name} ${offering.prof.last_name}` : 'نامشخص'}</p>
       <p><strong>ظرفیت:</strong> ${offering.capacity}</p>
 
       <h4>جلسات</h4>
@@ -131,7 +118,6 @@ function showCourseOfferingDetails(offering) {
 
 
 /* ----------------create---------------- */
-
 async function renderOfferCourse() {
   content.innerHTML = `
     <h2 style="text-align:center; color:#333; margin-bottom:20px;">ارائه درس</h2>
@@ -149,9 +135,16 @@ async function renderOfferCourse() {
       </select>
 
       <input id="groupCode" placeholder="کد گروه" style="padding:12px; border-radius:8px; border:1px solid #ccc; font-size:16px;" />
-      <input id="profName" placeholder="نام استاد" style="padding:12px; border-radius:8px; border:1px solid #ccc; font-size:16px;" />
+      
+      <select id="profSelect" style="
+        padding:12px; border-radius:8px; border:1px solid #ccc;
+        font-size:16px;
+      ">
+        <option value="">انتخاب استاد</option>
+      </select>
+
+
       <input id="capacity" placeholder="ظرفیت" type="number" style="padding:12px; border-radius:8px; border:1px solid #ccc; font-size:16px;" />
-      <input id="semester" placeholder="ترم" type="number" style="padding:12px; border-radius:8px; border:1px solid #ccc; font-size:16px;" />
 
       <div id="sessionsContainer">
         <h4 style="margin-top:0; color:#555;">جلسات</h4>
@@ -170,6 +163,7 @@ async function renderOfferCourse() {
   `;
 
   const courseSelect = document.getElementById('courseSelect');
+  const profSelect = document.getElementById('profSelect');
   const sessionsContainer = document.getElementById('sessionsContainer');
 
   // --- دریافت لیست درس‌ها ---
@@ -187,6 +181,24 @@ async function renderOfferCourse() {
     console.error(error);
     alert('خطا در دریافت لیست درس‌ها');
   }
+
+  // --- prof list ---
+  try {
+ const res = await fetch(`${API}/professors/`);
+  const data = await res.json();
+  const profs = data.results || data; // اگر pagination باشد
+
+  profs.forEach(p => {
+    const option = document.createElement('option');
+    option.value = p.id;
+    option.textContent = `${p.first_name} ${p.last_name}`;
+    profSelect.appendChild(option);
+  });
+
+} catch (error) {
+  console.error(error);
+  alert('خطا در دریافت لیست اساتید');
+}
 
   // --- ایجاد row جلسه ---
   function createSessionRow() {
@@ -237,15 +249,36 @@ async function renderOfferCourse() {
   document.getElementById('submitOfferedCourseBtn').addEventListener('click', submitAddOfferedCourse);
 }
 
-/* ----------------- ارسال فرم ----------------- */
 async function submitAddOfferedCourse() {
   try {
     const courseCode = document.getElementById('courseSelect').value;
+    const groupCode = document.getElementById('groupCode').value;
+    const profValue = document.getElementById('profSelect').value;
+    const capacityValue = document.getElementById('capacity').value;
+
+    // --- اعتبارسنجی فیلدها ---
     if (!courseCode) {
       alert('لطفاً یک درس انتخاب کنید');
       return;
     }
 
+    if (!profValue) {
+      alert('لطفاً استاد را انتخاب کنید');
+      return;
+    }
+
+    const profId = Number(profValue);
+    if (!profId) {
+      alert('شناسه استاد نامعتبر است');
+      return;
+    }
+
+    if ( Number(capacityValue) < 0) {
+      alert('ظرفیت معتبر وارد کنید');
+      return;
+    }
+
+    // --- جمع‌آوری جلسات ---
     const sessionRows = document.querySelectorAll('.session-row');
     const sessions = Array.from(sessionRows)
       .map(row => {
@@ -257,17 +290,19 @@ async function submitAddOfferedCourse() {
       })
       .filter(s => s !== null);
 
+
+    // --- آماده سازی payload ---
     const payload = {
       course_code: courseCode,
-      group_code: document.getElementById('groupCode').value,
-      prof_name: document.getElementById('profName').value,
-      capacity: Number(document.getElementById('capacity').value),
-      semester: Number(document.getElementById('semester').value),
+      group_code: groupCode,
+      prof_id: profId,
+      capacity: Number(capacityValue),
       sessions: sessions
     };
 
     console.log("Payload:", payload);
 
+    // --- ارسال به API ---
     const res = await fetch(`${API}/courseofferings/`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -276,7 +311,7 @@ async function submitAddOfferedCourse() {
 
     if (!res.ok) {
       const err = await res.json();
-      console.error(err);
+      console.error('Validation errors:', err);
       alert('خطا در افزودن درس ارائه شده: ' + (err.detail || JSON.stringify(err)));
       return;
     }
@@ -290,8 +325,10 @@ async function submitAddOfferedCourse() {
 }
 
 
+
 /* ------------ update ---------------*/
-async function renderUpdateOferedCourse() {
+/*
+async function renderUpdateOfferedCourse() {
   content.innerHTML = `<h2>انتخاب درس ارائه شده برای آپدیت</h2>
     <div class="offered-container"></div>`;
   const container = document.querySelector('.offered-container');
@@ -317,6 +354,343 @@ async function renderUpdateOferedCourse() {
   }
 }
 
+async function renderUpdateOfferedForm(id) {
+  content.innerHTML = `
+  <div class="form-header">
+    <button id="backBtn" class="btn-back">⬅ بازگشت</button>
+    <h2>آپدیت درس ارائه شده</h2>
+  </div>
+
+  <div class="offered-form">
+    <input id="groupCode" class="input-field" placeholder="کد گروه">
+    
+    <select id="profSelect" class="input-field">
+      <option value="">انتخاب استاد</option>
+    </select>
+
+    <input id="capacity" class="input-field" placeholder="ظرفیت" type="number">
+
+    <div id="sessionsContainer"><h4>جلسات</h4></div>
+    <button type="button" id="addSessionBtn" class="btn-add">➕ افزودن جلسه</button>
+
+    <div class="form-actions">
+      <button type="button" id="submitUpdateOfferedBtn" class="btn-submit">
+        💾 ثبت تغییرات
+      </button>
+    </div>
+  </div>
+`;
+
+  document.getElementById('backBtn').addEventListener('click', renderUpdateOfferedCourse);
+
+  const sessionsContainer = document.getElementById('sessionsContainer');
+
+  // --- اضافه کردن جلسه ---
+  function createSessionRow(session = {}) {
+    const row = document.createElement('div');
+    row.className = 'session-row';
+    row.style.display = 'flex';
+    row.style.gap = '5px';
+    row.style.marginBottom = '5px';
+    row.innerHTML = `
+      <select class="dayOfWeek input-field">
+        <option value="">روز هفته</option>
+        <option value="Saturday" ${session.day_of_week==='Saturday'?'selected':''}>شنبه</option>
+        <option value="Sunday" ${session.day_of_week==='Sunday'?'selected':''}>یکشنبه</option>
+        <option value="Monday" ${session.day_of_week==='Monday'?'selected':''}>دوشنبه</option>
+        <option value="Tuesday" ${session.day_of_week==='Tuesday'?'selected':''}>سه‌شنبه</option>
+        <option value="Wednesday" ${session.day_of_week==='Wednesday'?'selected':''}>چهارشنبه</option>
+      </select>
+      <select class="timeSlot input-field">
+        <option value="">ساعت</option>
+        <option value="8-10" ${session.time_slot==='8-10'?'selected':''}>8:00 - 10:00</option>
+        <option value="10-12" ${session.time_slot==='10-12'?'selected':''}>10:00 - 12:00</option>
+        <option value="14-16" ${session.time_slot==='14-16'?'selected':''}>14:00 - 16:00</option>
+        <option value="16-18" ${session.time_slot==='16-18'?'selected':''}>16:00 - 18:00</option>
+      </select>
+      <input class="location input-field" placeholder="محل" value="${session.location || ''}" />
+      <button type="button" class="removeSessionBtn btn-add">حذف</button>
+    `;
+    row.querySelector('.removeSessionBtn').addEventListener('click', () => row.remove());
+    sessionsContainer.appendChild(row);
+  }
+
+  document.getElementById('addSessionBtn').addEventListener('click', () => createSessionRow());
+
+  // --- بارگذاری اطلاعات موجود ---
+  async function loadExistingData() {
+    try {
+      const res = await fetch(`${API}/courseofferings/${id}/`);
+      if (!res.ok) throw new Error("خطا در دریافت اطلاعات درس ارائه شده");
+      const data = await res.json();
+
+      document.getElementById('groupCode').value = data.group_code || '';
+      document.getElementById('capacity').value = data.capacity || '';
+
+      // بارگذاری جلسات
+      if (data.sessions && data.sessions.length) {
+        data.sessions.forEach(s => createSessionRow(s));
+      } else {
+        createSessionRow();
+      }
+
+      // بارگذاری لیست اساتید
+      const profRes = await fetch(`${API}/professors/`);
+      const profData = await profRes.json();
+      const profs = profData.results || profData;
+
+      const profSelect = document.getElementById('profSelect');
+      profs.forEach(p => {
+        const option = document.createElement('option');
+        option.value = p.id;
+        option.textContent = `${p.first_name} ${p.last_name}`;
+        if (data.prof && data.prof.id === p.id) option.selected = true;
+        profSelect.appendChild(option);
+      });
+
+    } catch (err) {
+      console.error(err);
+      alert('خطا در بارگذاری اطلاعات درس ارائه شده');
+      createSessionRow();
+    }
+  }
+
+  loadExistingData();
+
+  document.getElementById('submitUpdateOfferedBtn').addEventListener('click', async () => {
+    try {
+      const sessionRows = document.querySelectorAll('.session-row');
+      const sessions = Array.from(sessionRows).map(row => {
+        const day = row.querySelector('.dayOfWeek').value;
+        const time = row.querySelector('.timeSlot').value;
+        const location = row.querySelector('.location').value || "";
+        if(day && time) return { day_of_week: day, time_slot: time, location };
+        return null;
+      }).filter(s => s !== null);
+
+      const profId = Number(document.getElementById('profSelect').value);
+      if (!profId) {
+        alert('لطفاً استاد را انتخاب کنید');
+        return;
+      }
+
+      const payload = {
+        group_code: document.getElementById('groupCode').value,
+        prof_id: profId,
+        capacity: Number(document.getElementById('capacity').value),
+        sessions: sessions
+      };
+
+      console.log("Update Payload:", payload);
+
+      const res = await fetch(`${API}/courseofferings/${id}/`, {
+        method: 'PATCH',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(payload)
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        console.error(err);
+        alert('خطا در آپدیت درس ارائه شده: ' + (err.detail || 'مشکل نامشخص'));
+        return;
+      }
+
+      alert('درس ارائه شده با موفقیت آپدیت شد');
+      renderOferedCourseList();
+
+    } catch(err) {
+      console.error(err);
+      alert('خطا در ارتباط با سرور');
+    }
+  });
+}
+*/
+
+async function renderUpdateOferedCourse() {
+  content.innerHTML = `<h2>انتخاب درس ارائه شده برای آپدیت</h2>
+    <div class="offered-container"></div>`;
+  const container = document.querySelector('.offered-container');
+
+  try {
+    const res = await fetch(`${API}/courseofferings/`);
+    if (!res.ok) throw new Error("خطا در دریافت لیست دروس ارائه شده");
+    const data = await res.json();
+
+    data.forEach(c => {
+      const card = document.createElement('div');
+      card.className = 'offered-card';
+      card.innerHTML = `
+        <h3>${c.course.name} (${c.course.code})</h3>
+        <p><strong>گروه:</strong> ${c.group_code}</p>
+        <button onclick="renderUpdateOfferedForm(${c.id})">آپدیت</button>
+      `;
+      container.appendChild(card);
+    });
+  } catch (error) {
+    console.error(error);
+    alert('خطا در دریافت لیست دروس ارائه شده');
+  }
+}
+async function renderUpdateOfferedForm(id) {
+  content.innerHTML = `
+  <div class="form-header">
+    <button id="backBtn" class="btn-back">⬅ بازگشت</button>
+    <h2>آپدیت درس ارائه شده</h2>
+  </div>
+
+  <div class="offered-form">
+    <input id="groupCode" class="input-field" placeholder="کد گروه">
+    
+    <select id="profSelect" class="input-field">
+      <option value="">انتخاب استاد (استاد قبلی حفظ می‌شود)</option>
+    </select>
+
+    <input id="capacity" class="input-field" placeholder="ظرفیت" type="number">
+
+    <div id="sessionsContainer"><h4>جلسات</h4></div>
+    <button type="button" id="addSessionBtn" class="btn-add">➕ افزودن جلسه</button>
+
+    <div class="form-actions">
+      <button type="button" id="submitUpdateOfferedBtn" class="btn-submit">
+        💾 ثبت تغییرات
+      </button>
+    </div>
+  </div>
+`;
+
+document.getElementById('backBtn').addEventListener('click', () => renderUpdateOferedCourse());
+
+const sessionsContainer = document.getElementById('sessionsContainer');
+const profSelect = document.getElementById('profSelect');
+
+// --- دریافت لیست اساتید ---
+try {
+  const resProf = await fetch(`${API}/professors/`);
+  const dataProf = await resProf.json();
+  const profs = dataProf.results || dataProf;
+
+  profs.forEach(p => {
+    const option = document.createElement('option');
+    option.value = p.id;
+    option.textContent = `${p.first_name} ${p.last_name}`;
+    profSelect.appendChild(option);
+  });
+} catch (err) {
+  console.error(err);
+  alert("خطا در دریافت لیست اساتید");
+}
+
+// --- اضافه کردن جلسه ---
+function createSessionRow(session = {}) {
+  const row = document.createElement('div');
+  row.className = 'session-row';
+  row.style.display = 'flex';
+  row.style.gap = '5px';
+  row.style.marginBottom = '5px';
+  row.innerHTML = `
+    <select class="dayOfWeek input-field">
+      <option value="">روز هفته</option>
+      <option value="Saturday" ${session.day_of_week==='Saturday'?'selected':''}>شنبه</option>
+      <option value="Sunday" ${session.day_of_week==='Sunday'?'selected':''}>یکشنبه</option>
+      <option value="Monday" ${session.day_of_week==='Monday'?'selected':''}>دوشنبه</option>
+      <option value="Tuesday" ${session.day_of_week==='Tuesday'?'selected':''}>سه‌شنبه</option>
+      <option value="Wednesday" ${session.day_of_week==='Wednesday'?'selected':''}>چهارشنبه</option>
+    </select>
+    <select class="timeSlot input-field">
+      <option value="">ساعت</option>
+      <option value="8-10" ${session.time_slot==='8-10'?'selected':''}>8:00 - 10:00</option>
+      <option value="10-12" ${session.time_slot==='10-12'?'selected':''}>10:00 - 12:00</option>
+      <option value="14-16" ${session.time_slot==='14-16'?'selected':''}>14:00 - 16:00</option>
+      <option value="16-18" ${session.time_slot==='16-18'?'selected':''}>16:00 - 18:00</option>
+    </select>
+    <input class="location input-field" placeholder="محل" value="${session.location || ''}" />
+    <button type="button" class="removeSessionBtn btn-add">حذف</button>
+  `;
+  row.querySelector('.removeSessionBtn').addEventListener('click', () => row.remove());
+  sessionsContainer.appendChild(row);
+}
+
+document.getElementById('addSessionBtn').addEventListener('click', () => createSessionRow());
+
+// --- بارگذاری داده موجود ---
+async function loadExistingSessions() {
+  try {
+    const res = await fetch(`${API}/courseofferings/${id}/`);
+    const data = await res.json();
+
+    document.getElementById('groupCode').value = data.group_code || '';
+    document.getElementById('capacity').value = data.capacity || '';
+
+    if (data.sessions && data.sessions.length > 0) {
+      data.sessions.forEach(s => createSessionRow(s));
+    } else {
+      createSessionRow();
+    }
+
+    // استاد قبلی
+    const profOption = document.createElement('option');
+    profOption.value = data.prof.id;
+    profOption.textContent = `${data.prof.first_name} ${data.prof.last_name} (استاد فعلی)`;
+    profOption.selected = true;
+    profSelect.appendChild(profOption);
+
+  } catch (err) {
+    console.error(err);
+    alert("خطا در بارگذاری اطلاعات درس ارائه شده");
+    createSessionRow();
+  }
+}
+
+loadExistingSessions();
+
+// --- ثبت تغییرات ---
+document.getElementById('submitUpdateOfferedBtn').addEventListener('click', async () => {
+  try {
+    const sessionRows = document.querySelectorAll('.session-row');
+    const sessions = Array.from(sessionRows).map(row => {
+      const day = row.querySelector('.dayOfWeek').value;
+      const time = row.querySelector('.timeSlot').value;
+      const location = row.querySelector('.location').value || "";
+      if(day && time) return { day_of_week: day, time_slot: time, location };
+      return null;
+    }).filter(s => s !== null);
+
+    const payload = {
+      group_code: document.getElementById('groupCode').value,
+      capacity: Number(document.getElementById('capacity').value),
+      sessions: sessions
+    };
+
+    const selectedProfId = profSelect.value;
+    if(selectedProfId && Number(selectedProfId) !== selectedProfId) payload.prof_id = Number(selectedProfId);
+
+    console.log("Update Payload:", payload);
+
+    const res = await fetch(`${API}/courseofferings/${id}/`, {
+      method: 'PATCH',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(payload)
+    });
+
+    if(!res.ok){
+      const err = await res.json();
+      console.error(err);
+      alert('خطا در آپدیت درس ارائه شده: ' + (err.detail || 'مشکل نامشخص'));
+      return;
+    }
+
+    alert('درس ارائه شده با موفقیت آپدیت شد');
+    renderOferedCourseList();
+
+  } catch(err){
+    console.error(err);
+    alert('خطا در ارتباط با سرور');
+  }
+});
+}
+
+/*
 function renderUpdateOfferedForm(id) {
   content.innerHTML = `
   <div class="form-header">
@@ -328,7 +702,6 @@ function renderUpdateOfferedForm(id) {
     <input id="groupCode" class="input-field" placeholder="کد گروه">
     <input id="profName" class="input-field" placeholder="نام استاد">
     <input id="capacity" class="input-field" placeholder="ظرفیت" type="number">
-    <input id="semester" class="input-field" placeholder="ترم" type="number">
 
     <div id="sessionsContainer"><h4>جلسات</h4></div>
     <button type="button" id="addSessionBtn" class="btn-add">➕ افزودن جلسه</button>
@@ -360,7 +733,6 @@ backBtn.addEventListener('click', () => {
       document.getElementById('groupCode').value = data.group_code || '';
       document.getElementById('profName').value = data.prof_name || '';
       document.getElementById('capacity').value = data.capacity || '';
-      document.getElementById('semester').value = data.semester || '';
 
       // بارگذاری جلسات
       if (data.sessions && data.sessions.length > 0) {
@@ -423,7 +795,6 @@ backBtn.addEventListener('click', () => {
         group_code: document.getElementById('groupCode').value,
         prof_name: document.getElementById('profName').value,
         capacity: Number(document.getElementById('capacity').value),
-        semester: Number(document.getElementById('semester').value),
         sessions: sessions
       };
 
@@ -450,11 +821,12 @@ backBtn.addEventListener('click', () => {
     }
   });
 }
-
+*/
 
 
 
 /* --------------- delete ---------------*/
+
 async function renderDeleteOferedCourse() {
   content.innerHTML = `<h2>حذف درس ارائه شده</h2><div class="offered-container"></div>`;
   const container = document.querySelector('.offered-container');

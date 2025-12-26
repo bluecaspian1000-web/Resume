@@ -1,10 +1,27 @@
 from django.contrib.auth import authenticate
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes,authentication_classes
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
+from rest_framework_simplejwt.authentication import JWTAuthentication
 
 
+@api_view(['GET'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+def current_user(request):
+    user = request.user
+    groups = list(user.groups.values_list('name', flat=True))
+    role = groups[0] if groups else None
+    return Response({
+        'id': user.id,
+        'username': user.username,
+        'role': role
+    })
+
+
+"""
 @api_view(['POST'])
 def login_api(request):
     username = request.data.get('username')
@@ -44,6 +61,7 @@ def login_api(request):
         {"detail": "Invalid credentials"},
         status=status.HTTP_401_UNAUTHORIZED
     )
+"""
 """
 @api_view(['POST'])
 def login_api(request):

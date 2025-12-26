@@ -1,5 +1,6 @@
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
+#from students.models import *
 from django.contrib.auth.models import User
 
 
@@ -68,15 +69,41 @@ class Session(models.Model):
     def __str__(self):
         return f"{self.day_of_week} ({self.time_slot})" 
     
+class Semester(models.Model):
+    year = models.PositiveIntegerField(verbose_name="year",default=2025,blank=True,null=True)
+    term = models.PositiveSmallIntegerField(
+        verbose_name="term",
+        help_text="1=First, 2=Second, 3=Summer",
+        default=1,
+        blank=True,
+        null=True,
+    )
+    code = models.PositiveIntegerField(
+        unique=True,
+        editable=False,
+        verbose_name="semester code"
+    )
+    is_active = models.BooleanField(default=False)
 
+    class Meta:
+        unique_together = ('year', 'term')
+
+    def save(self, *args, **kwargs):
+        self.code = self.year * 10 + self.term
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return str(self.code)
 
 
 class CourseOffering(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='schedules', verbose_name="course")
     capacity = models.PositiveIntegerField(verbose_name="capacity",default=30)
-    prof_name = models.CharField(max_length=50, verbose_name="prof_name",blank=True,null=True,default="نامشخص")    
+    #prof_name = models.CharField(max_length=50, verbose_name="prof_name",blank=True,null=True,default="نامشخص")  
+    prof = models.ForeignKey(User,on_delete=models.CASCADE, related_name='professor', verbose_name="prof-name")  
     sessions = models.ManyToManyField(Session,blank=True,null=True, related_name="course_schedules")
-    semester = models.IntegerField(max_length=30,default=20251,blank=True,null=True, verbose_name="semester") 
+    #semester = models.IntegerField(max_length=30,default=20251,blank=True,null=True, verbose_name="semester") 
+    semester = models.ForeignKey(Semester,on_delete=models.CASCADE, related_name='semester', verbose_name="semester-course")
     group_code = models.CharField(
         max_length=10,
         verbose_name="group code"
@@ -89,7 +116,7 @@ class CourseOffering(models.Model):
     ) 
 
     def save(self, *args, **kwargs):
-        self.code = f"{self.course.code}{self.group_code}{self.semester}"
+        self.code = f"{self.course.code}{self.group_code}{self.semester.code}"
         super().save(*args, **kwargs)
 
     def __str__(self):
@@ -98,6 +125,5 @@ class CourseOffering(models.Model):
     class Meta:
         verbose_name = "course offering"
         verbose_name_plural = "course offering"
-        #unique_together = ['course']
 
 

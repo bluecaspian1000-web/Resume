@@ -9,13 +9,36 @@ from rest_framework.response import Response
 from rest_framework import status
 from django_filters.rest_framework import DjangoFilterBackend
 from .filters import CourseOfferingFilter
+from students.models import *
 
 
 
 class CourseOfferingViewSet(ModelViewSet):
-    queryset = CourseOffering.objects.all().distinct()
+    queryset = CourseOffering.objects.filter(semester__is_active=True).distinct()
+    #permission_classes = [IsAuthenticated] 
+    """
+    def get_queryset(self):
+        user = self.request.user
+
+        if user.groups.filter(name='student').exists():
+            try:
+                active_semester = StudentSemester.objects.filter(
+                    student_id=user.id,
+                    is_active=True
+                ).latest('semester__year', 'semester__term')
+            except StudentSemester.DoesNotExist:
+                return CourseOffering.objects.none()
+            
+            return CourseOffering.objects.filter(semester=active_semester) #semester
+
+        if user.groups.filter(name__in=['admin', 'prof']).exists():
+            return CourseOffering.objects.all()
+        
+        return CourseOffering.objects.all()
+    """
     filter_backends = [DjangoFilterBackend]
     filterset_class = CourseOfferingFilter
+
     def get_serializer_class(self):
         if self.action in ['list', 'retrieve']:
             return CourseOfferingReadSerializer
@@ -29,14 +52,22 @@ class CourseOfferingViewSet(ModelViewSet):
 class SessionViewSet(ModelViewSet):
     queryset = Session.objects.all()
     serializer_class = SessionSerializer  
+    #permission_classes = [IsAuthenticated] 
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['day_of_week', 'time_slot', 'location']
 
 
-
+class SemesterViewSet(ModelViewSet):
+    queryset = Semester.objects.all().distinct()
+    serializer_class = SemesterSerializer
+    #permission_classes = [IsAuthenticated] 
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['year','term','code']
+    
 
 class CourseViewSet(ModelViewSet):
     queryset = Course.objects.all()
+    #permission_classes = [IsAuthenticated] 
 
     def get_serializer_class(self):
         if self.action in ['list', 'retrieve']:
