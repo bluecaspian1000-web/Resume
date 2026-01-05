@@ -1,7 +1,0 @@
-Django
-djangorestframework
-djangorestframework-simplejwt
-drf-yasg
-PyJWT
-django-filter
-corsheaders
