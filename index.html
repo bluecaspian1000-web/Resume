@@ -89,7 +89,7 @@
 
 <!-- WebSocket -->
 <script>
-    const ws = new WebSocket("ws://localhost:8000/ws/online");
+    const ws = new WebSocket("wss://resume-backend-nmxq.onrender.com/ws/online");
 
     ws.onmessage = function (event) {
         document.getElementById("online").innerText = event.data;
