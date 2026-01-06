@@ -112,7 +112,7 @@ document.getElementById("requestForm").addEventListener("submit", async (e) => {
     };
 
     try {
-        const res = await fetch("http://localhost:8000/requests", {
+        const res = await fetch("https://resume-backend-nmxq.onrender.com/requests", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(data)
